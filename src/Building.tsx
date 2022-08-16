@@ -1,19 +1,23 @@
 import React, { useState } from "react";
 import { Button } from "react-bootstrap";
 import useInterval from "react-useinterval";
+import "./styles.css";
+const TICK_DELAY = process.env.TICK_DELAY || "1000";
 
 export default function Building({
   banks,
   floors,
+  initialFloor,
 }: {
   banks: number;
   floors: number;
+  initialFloor: number;
 }) {
   const [calls, setCalls] = useState<{ direction: string; from: number }[][]>(
     Array.from({ length: banks }, () => [])
   );
   const [elevatorsPosition, setElevatorsPosition] = useState<number[]>(
-    new Array(banks).fill(0)
+    new Array(banks).fill(initialFloor)
   );
   const [cycle, setCycle] = useState<string[]>(new Array(banks).fill("idle"));
 
@@ -173,7 +177,7 @@ export default function Building({
     });
   };
 
-  useInterval(ticks, 1000);
+  useInterval(ticks, parseInt(TICK_DELAY));
 
   return (
     <>
@@ -193,68 +197,37 @@ export default function Building({
       </table>
       <div style={{ display: "flex" }}>
         <div style={{ marginTop: 25 }}>
-          {floorMap.map((ix) => {
-            return (
-              <div
-                key={`call-panel-${ix}`}
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginBottom: 10,
-                }}
-              >
-                <p style={{ margin: 0, paddingRight: 10 }}>{ix}</p>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <Button
-                    style={{ marginBottom: 5 }}
-                    onClick={up.bind(null, ix)}
-                  >
-                    ↑
-                  </Button>
-                  <Button onClick={down.bind(null, ix)}>↓</Button>
-                </div>
+          {floorMap.map((ix) => (
+            <div key={`call-panel-${ix}`} className="callPanel">
+              <p className="callPanelText">{ix}</p>
+              <div className="callButtonContainer">
+                <Button className="callButton" onClick={up.bind(null, ix)}>
+                  ↑
+                </Button>
+                <Button onClick={down.bind(null, ix)}>↓</Button>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
-        <div
-          style={{ display: "flex", backgroundColor: "red", marginLeft: 20 }}
-        >
+        <div className="internalPanel">
           {bankMap.map((ix) => (
-            <div
-              key={`panel-${ix}`}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                paddingInline: 20,
-              }}
-            >
-              <p style={{ marginBottom: 25 }}>Bank {ix}</p>
-
-              {floorMap.map((iy) => {
-                return (
-                  <div key={`panel-${ix}-${iy}`}>
-                    <Button
-                      onClick={() => {
-                        calls[ix].push({
-                          direction: iy > elevatorsPosition[ix] ? "up" : "down",
-                          from: iy,
-                        });
-                      }}
-                      style={{ borderRadius: 20, marginBottom: 53 }}
-                    >
-                      {iy}
-                    </Button>
-                  </div>
-                );
-              })}
+            <div className="panelContent" key={`panel-${ix}`}>
+              <p className="panelText">Bank {ix}</p>
+              {floorMap.map((iy) => (
+                <div key={`panel-${ix}-${iy}`}>
+                  <Button
+                    className="panelButton"
+                    onClick={() => {
+                      calls[ix].push({
+                        direction: iy > elevatorsPosition[ix] ? "up" : "down",
+                        from: iy,
+                      });
+                    }}
+                  >
+                    {iy}
+                  </Button>
+                </div>
+              ))}
             </div>
           ))}
         </div>
